@@ -10,7 +10,7 @@ var taskCounter uint64 = 0
 type Task struct {
 	ID        uint64    `json:"id"`
 	Title     string    `json:"title"`
-	Status    string    `json:"status"` // pending or in_progress or completed
+	Status    string    `json:"status"` // pending || in_progress || completed
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
@@ -49,10 +49,16 @@ func (r *TaskRepository) GetAll() []Task {
 	return tasks
 }
 
-func NewTask(title string, optionalStatus ...string) Task {
+func (s *TaskService) NewTask(title string, optionalStatus ...string) Task {
 	status := "pending"
 	if len(optionalStatus) > 0 {
-		status = optionalStatus[0]
+		proposedStatus := optionalStatus[0]
+		switch proposedStatus {
+		case "pending", "in_progress", "completed":
+			status = proposedStatus
+		default:
+			s.logger.Log("VALIDATION", taskCounter+1, "Invalid status - defaulting to 'pending'")
+		}
 	}
 
 	taskCounter += 1

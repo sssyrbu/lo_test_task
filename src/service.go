@@ -11,7 +11,7 @@ func NewTaskService(repo *TaskRepository, logger *Logger) *TaskService {
 	return &TaskService{repo: repo, logger: logger}
 }
 func (s *TaskService) Create(title string, status string) Task {
-	task := NewTask(title, status)
+	task := s.NewTask(title, status)
 	s.repo.Save(task)
 	s.logger.Log("CREATE", task.ID, "Task created: "+title)
 	return task

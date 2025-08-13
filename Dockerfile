@@ -1,12 +1,21 @@
-FROM golang:latest AS gobuild
-WORKDIR /build-dir
-COPY go.mod .
-RUN go mod download all
-COPY . .
-RUN go build -o /tmp/ test_task. 
+FROM golang:latest AS builder
 
-FROM debian AS app 
+WORKDIR /app
+
+COPY go.mod ./
+RUN go mod download
+
+COPY . .
+
+RUN CGO_ENABLED=0 GOOS=linux go build -o /app/test_task ./src
+
+FROM debian:bookworm-slim
+
+WORKDIR /app
+
 RUN apt-get update
-COPY --from=gobuild /tmp/test_task /app/test_task
+COPY --from=builder /app/test_task /app/
+
 EXPOSE 8080
+
 CMD ["/app/test_task"]
